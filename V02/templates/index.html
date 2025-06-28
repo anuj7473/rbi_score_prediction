@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .form-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .form-section h3 {
+            color: #555;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        select, input[type="radio"] {
+            margin-bottom: 10px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .radio-option input[type="radio"] {
+            margin-right: 5px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            margin: 30px auto 0;
+            transition: transform 0.2s;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Credit Score Calculator</h1>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="/calculate">
+            <div class="form-section">
+                <h3>User Information</h3>
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" id="email" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:16px;">
+                </div>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" name="name" id="name" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:16px;">
+                </div>
+                <div class="form-group">
+                    <label for="contact">Contact:</label>
+                    <input type="text" name="contact" id="contact" required style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;font-size:16px;">
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Digital Access</h3>
+                <div class="form-group">
+                    <label>Internet Usage:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="internetUsed" value="yes" id="internet_yes">
+                            <label for="internet_yes">Yes</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="internetUsed" value="no" id="internet_no" checked>
+                            <label for="internet_no">No</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dataPackExpense">Data Pack Expense:</label>
+                    <select name="dataPackExpense" id="dataPackExpense">
+                        <option value="₹0-₹100" selected>₹0-₹100</option>
+                        <option value="₹101-₹200">₹101-₹200</option>
+                        <option value="More than ₹200">More than ₹200</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Family Information</h3>
+                <div class="form-group">
+                    <label for="dependentMembers">Dependent Members:</label>
+                    <select name="dependentMembers" id="dependentMembers">
+                        <option value="0-2" selected>0-2</option>
+                        <option value="3-5">3-5</option>
+                        <option value="6-8">6-8</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="foodFuelExpensePercent">Food & Fuel Expense Percentage:</label>
+                    <select name="foodFuelExpensePercent" id="foodFuelExpensePercent">
+                        <option value="Less than 25%" selected>Less than 25%</option>
+                        <option value="25-50%">25-50%</option>
+                        <option value="51-75%">51-75%</option>
+                        <option value="More than 75%">More than 75%</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="outstandingLoansEMI">Outstanding Loans EMI:</label>
+                    <select name="outstandingLoansEMI" id="outstandingLoansEMI">
+                        <option value="0" selected>0</option>
+                        <option value="1-500">1-500</option>
+                        <option value="501-1000">501-1000</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Income & Employment</h3>
+                <div class="form-group">
+                    <label for="earningDependentRation">Earning to Dependent Ratio:</label>
+                    <select name="earningDependentRation" id="earningDependentRation">
+                        <option value="1:2" selected>1:2</option>
+                        <option value="1:4">1:4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="jobType">Job Type:</label>
+                    <select name="jobType" id="jobType">
+                        <option value="factory worker" selected>Factory Worker</option>
+                        <option value="small business">Small Business</option>
+                        <option value="daily wager">Daily Wager</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="jobStability">Job Stability:</label>
+                    <select name="jobStability" id="jobStability">
+                        <option value="seasonal" selected>Seasonal</option>
+                        <option value="permanent">Permanent</option>
+                        <option value="irregular">Irregular</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="incomeFrequency">Income Frequency:</label>
+                    <select name="incomeFrequency" id="incomeFrequency">
+                        <option value="monthly" selected>Monthly</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="daily">Daily</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Emergency Fund & Assets</h3>
+                <div class="form-group">
+                    <label for="emergencyFundManagement">Emergency Fund Management:</label>
+                    <select name="emergencyFundManagement" id="emergencyFundManagement">
+                        <option value="Family-friends" selected>Family-friends</option>
+                        <option value="Savings">Savings</option>
+                        <option value="moneyLender">Money Lender</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emergencyInterestRate">Emergency Interest Rate:</label>
+                    <select name="emergencyInterestRate" id="emergencyInterestRate">
+                        <option value="1-10" selected>1-10%</option>
+                        <option value="0%">0%</option>
+                        <option value="20%">20%</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Past Emergency Experience:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="pastEmergencyExperience" value="no" id="emergency_no" checked>
+                            <label for="emergency_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="pastEmergencyExperience" value="yes" id="emergency_yes">
+                            <label for="emergency_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Assets Owned (select all that apply):</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-option">
+                            <input type="checkbox" name="assetsOwned" value="Land" id="asset_land">
+                            <label for="asset_land">Land</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" name="assetsOwned" value="Vehicles" id="asset_vehicles">
+                            <label for="asset_vehicles">Vehicles</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" name="assetsOwned" value="Livestock" id="asset_livestock">
+                            <label for="asset_livestock">Livestock</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" name="assetsOwned" value="Mobile Phones Only" id="asset_mobile">
+                            <label for="asset_mobile">Mobile Phones Only</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" name="assetsOwned" value="None" id="asset_none">
+                            <label for="asset_none">None</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Motorized Vehicles:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="motorizedVehicles" value="no" id="motorized_no" checked>
+                            <label for="motorized_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="motorizedVehicles" value="yes" id="motorized_yes">
+                            <label for="motorized_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Financial Behavior</h3>
+                <div class="form-group">
+                    <label>Secondary Income:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="secondaryIncome" value="no" id="secondary_no" checked>
+                            <label for="secondary_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="secondaryIncome" value="yes" id="secondary_yes">
+                            <label for="secondary_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="monthlySavings">Monthly Savings:</label>
+                    <select name="monthlySavings" id="monthlySavings">
+                        <option value="0" selected>0</option>
+                        <option value="1-500">1-500</option>
+                        <option value="1000+">1000+</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Government Scheme Awareness:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="governmentSchemeAwareness" value="no" id="scheme_no" checked>
+                            <label for="scheme_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="governmentSchemeAwareness" value="yes" id="scheme_yes">
+                            <label for="scheme_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Loan Default History:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="loanDefaultHistory" value="no" id="default_no" checked>
+                            <label for="default_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="loanDefaultHistory" value="yes" id="default_yes">
+                            <label for="default_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>LPG Adoption</h3>
+                <div class="form-group">
+                    <label>LPG Preference:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="lpgPreference" value="no" id="lpg_no" checked>
+                            <label for="lpg_no">No</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="lpgPreference" value="yes" id="lpg_yes">
+                            <label for="lpg_yes">Yes</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lpgChallenges">LPG Challenges:</label>
+                    <select name="lpgChallenges" id="lpgChallenges">
+                        <option value="cost" selected>Cost</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cylinderPreference">Cylinder Preference:</label>
+                    <select name="cylinderPreference" id="cylinderPreference">
+                        <option value="other" selected>Other</option>
+                        <option value="5kg">5kg</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Calculate Credit Score</button>
+        </form>
+    </div>
+</body>
+</html>

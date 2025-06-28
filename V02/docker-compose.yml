@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  credit-score-app:
+    build: .
+    ports:
+      - "5000:5000"  # Flask frontend
+      - "8000:8000"  # FastAPI backend
+    volumes:
+      - ./data:/app/data  # Mount data directory for CSV persistence
+      - ./history.csv:/app/history.csv  # Mount history CSV file
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s 
